@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 
 export default function Page() {
-  // Navigation & Auth
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [adminUser, setAdminUser] = useState('');
@@ -11,21 +10,18 @@ export default function Page() {
   const [loginError, setLoginError] = useState('');
   const [currentTab, setCurrentTab] = useState('dashboard');
 
-  // Kiosk State
   const [kioskCode, setKioskCode] = useState('');
   const [kioskStatus, setKioskStatus] = useState(null);
   const [countdown, setCountdown] = useState(0);
   const [currentTime, setCurrentTime] = useState('');
   const [currentDate, setCurrentDate] = useState('');
 
-  // Data States
   const [workers, setWorkers] = useState([]);
   const [attendance, setAttendance] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().substring(0, 7));
 
-  // Modals & Forms
   const [showAddWorkerModal, setShowAddWorkerModal] = useState(false);
   const [newWorker, setNewWorker] = useState({
     code: '',
@@ -60,7 +56,6 @@ export default function Page() {
     notes: 'تسجيل يدوي من الإدارة',
   });
 
-  // Clock effect
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
@@ -72,7 +67,6 @@ export default function Page() {
     return () => clearInterval(timer);
   }, []);
 
-  // Countdown reset effect for kiosk
   useEffect(() => {
     if (countdown > 0) {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
@@ -83,7 +77,6 @@ export default function Page() {
     }
   }, [countdown, kioskStatus]);
 
-  // Load Initial Data
   const fetchData = async () => {
     try {
       const res = await fetch(`/api/data?date=${selectedDate}`);
@@ -96,7 +89,6 @@ export default function Page() {
         }
       }
     } catch (e) {
-      // Demo data fallback if server is waking up
       setWorkers([
         { id: 1, code: '1001', name: 'فاطمة محمود', department: 'خياطة', phone: '01011112222', wage_type: 'daily', base_rate: 150, overtime_rate: 25, shift_start: '08:00', shift_end: '17:00' },
         { id: 2, code: '1002', name: 'أحمد إبراهيم', department: 'قص', phone: '01022223333', wage_type: 'daily', base_rate: 180, overtime_rate: 30, shift_start: '08:00', shift_end: '17:00' },
@@ -109,14 +101,12 @@ export default function Page() {
     fetchData();
   }, [selectedDate]);
 
-  // Keypad Handlers
   const handleKeypadPress = (val) => {
     if (kioskCode.length < 8) setKioskCode((prev) => prev + val);
   };
   const handleKeypadClear = () => setKioskCode('');
   const handleKeypadBackspace = () => setKioskCode((prev) => prev.slice(0, -1));
 
-  // Punch Action
   const handlePunch = async (type) => {
     if (!kioskCode.trim()) {
       setKioskStatus({ type: 'error', message: 'يرجى إدخال كود العامل أولاً', details: '' });
@@ -160,7 +150,6 @@ export default function Page() {
     setCountdown(5);
   };
 
-  // Admin Login
   const handleLogin = (e) => {
     e.preventDefault();
     if (adminUser.trim() === 'admin' && adminPass === 'Admin@123456') {
@@ -173,7 +162,6 @@ export default function Page() {
     }
   };
 
-  // Add Worker
   const handleAddWorker = async (e) => {
     e.preventDefault();
     if (!newWorker.code || !newWorker.name) return;
@@ -205,7 +193,6 @@ export default function Page() {
     }
   };
 
-  // Delete Worker
   const handleDeleteWorker = async (id, name) => {
     if (confirm(`هل أنت متأكد من حذف العامل: ${name}؟`)) {
       try {
@@ -221,7 +208,6 @@ export default function Page() {
     }
   };
 
-  // Add Transaction
   const handleAddTx = async (e) => {
     e.preventDefault();
     if (!newTx.worker_code || !newTx.amount) return;
@@ -250,7 +236,6 @@ export default function Page() {
     }
   };
 
-  // Add Manual Attendance
   const handleAddManualAtt = async (e) => {
     e.preventDefault();
     if (!manualAtt.worker_code) return;
@@ -272,7 +257,6 @@ export default function Page() {
     }
   };
 
-  // Backup Download
   const handleDownloadBackup = async () => {
     try {
       const res = await fetch('/api/data?action=backup');
@@ -289,7 +273,6 @@ export default function Page() {
     }
   };
 
-  // Export Payroll to Excel (UTF-8 BOM)
   const handleExportPayrollExcel = () => {
     const headers = ['كود العامل', 'الاسم', 'القسم', 'نظام الأجر', 'أيام الحضور', 'ساعات العمل', 'ساعات الإضافي', 'الأجر الأساسي', 'قيمة الإضافي', 'المكافآت', 'الخصومات', 'السلف', 'صافي الراتب'];
     const rows = workers.map((w) => {
@@ -344,7 +327,6 @@ export default function Page() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-amber-500 selection:text-black">
-      {/* Header */}
       <header className="bg-slate-900 border-b border-amber-500/20 px-4 py-3 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-600 to-amber-400 flex items-center justify-center font-black text-slate-950 text-2xl shadow-lg shadow-amber-500/20">
@@ -386,10 +368,8 @@ export default function Page() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="flex-1 flex flex-col p-4 md:p-6 max-w-7xl mx-auto w-full">
         {!isAdminLoggedIn ? (
-          /* WORKER KIOSK */
           <div className="flex-1 flex flex-col items-center justify-center max-w-xl mx-auto w-full py-4">
             <div className="w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
               <div className="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600"></div>
@@ -487,7 +467,6 @@ export default function Page() {
             </div>
           </div>
         ) : (
-          /* ADMIN SUITE */
           <div className="flex-1 flex flex-col gap-6">
             <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800">
               {[
@@ -512,7 +491,6 @@ export default function Page() {
               ))}
             </div>
 
-            {/* DASHBOARD */}
             {currentTab === 'dashboard' && (
               <div className="space-y-6">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -606,7 +584,6 @@ export default function Page() {
               </div>
             )}
 
-            {/* WORKERS */}
             {currentTab === 'workers' && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -670,7 +647,6 @@ export default function Page() {
               </div>
             )}
 
-            {/* ATTENDANCE */}
             {currentTab === 'attendance' && (
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -744,7 +720,6 @@ export default function Page() {
               </div>
             )}
 
-            {/* FINANCE */}
             {currentTab === 'finance' && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -811,7 +786,6 @@ export default function Page() {
               </div>
             )}
 
-            {/* PAYROLL */}
             {currentTab === 'payroll' && (
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -909,7 +883,6 @@ export default function Page() {
               </div>
             )}
 
-            {/* BACKUP */}
             {currentTab === 'backup' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow space-y-4">
@@ -959,8 +932,6 @@ export default function Page() {
         )}
       </main>
 
-      {/* MODALS */}
-      {/* 1. Admin Login */}
       {showAdminModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative">
@@ -1016,7 +987,6 @@ export default function Page() {
         </div>
       )}
 
-      {/* 2. Add Worker */}
       {showAddWorkerModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
@@ -1139,7 +1109,6 @@ export default function Page() {
         </div>
       )}
 
-      {/* 3. Add Transaction */}
       {showAddTxModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative">
@@ -1220,7 +1189,6 @@ export default function Page() {
         </div>
       )}
 
-      {/* 4. Manual Attendance */}
       {showManualAttModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative">
